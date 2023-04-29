@@ -15,7 +15,6 @@ const jwtVerify = async (req, res, next) => {
     try {
         const tokenData = await jwt.verify(token, process.env.JWT_SECRET_KEY);
         const user = await User.findOne({ _id: tokenData.user_id });
-console.log(tokenData, user)
         if (!user) {
             return res.status(401).json({ success: false, message: "Invalid token" });
         }

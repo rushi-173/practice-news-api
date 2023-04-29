@@ -27,24 +27,28 @@ const updatePreferences = async (req, res) => {
 
 const getNews = async (req, res) => {
     try {
-        if(req.user.preferences.length){
+        if(req.user?.preferences?.length){
             const results = await Promise.allSettled(req.user.preferences.map((pref)=> {
                 if(newsCache[pref]){
                     return newsCache[pref]
                 }else {
-                    return fetch(`${process.env.NEWS_API_URL}&q=a&category=${pref}`).then(data=> data.json())
+                    return fetch(`${process.env.NEWS_API_URL}&q=a&category=${pref}`).then(data=> data.json()).then(data=> data.articles)
                 }
             }))
+            console.log(results)
+
             const combinedResults = results.reduce((acc, item)=>{
                 return [...acc, ...item]
             },[])
+        console.log(combinedResults)
+
             res.status(200).send({ success: true, message: "", news: combinedResults})
         }else{
             if(newsCache['general']){
                 res.status(200).send({ success: true, message: "", news: newsCache['general']})
                 return;
             }else {
-                const news = await fetch(`${process.env.NEWS_API_URL}&q=a`).then(data=> data.json())
+                const news = await fetch(`${process.env.NEWS_API_URL}&q=a`).then(data=> data.json()).then(data=> data.articles)
                 newsCache['general'] = news;
                 res.status(200).send({ success: true, message: "", news})
                 return;
